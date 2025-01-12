@@ -19,12 +19,14 @@ namespace LocationApp.Location.Controllers
     [Route("api/[controller]")]
     public class LocationController : ControllerBase
     {
+        private readonly RequestQueueService _requestQueue;
         private readonly IRepositoryManager _repositoryManager;
         private readonly IHubContext<SearchHub> _hubContext;
         private readonly IMapper _mapper;
 
-        public LocationController(IRepositoryManager repositoryManager, IHubContext<SearchHub> hubContext, IMapper mapper)
+        public LocationController(RequestQueueService requestQueue, IRepositoryManager repositoryManager, IHubContext<SearchHub> hubContext, IMapper mapper)
         {
+            _requestQueue = requestQueue;
             _repositoryManager = repositoryManager;
             _hubContext = hubContext;
             _mapper = mapper;
@@ -34,15 +36,15 @@ namespace LocationApp.Location.Controllers
         [SwaggerOperation(summary: "Get locations")]
         [SwaggerResponse(200, "Got locations")]
         public async Task<IActionResult> GetCategories(
-            [FromServices] RequestQueueService requestQueue,
             [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
-            [FromHeader(Name = "Authorization")] string apiKey,
             [FromQuery] DataTableOptions input)
         {
+            var apiKey = Request.Headers["Authorization"].FirstOrDefault();
+
             if (string.IsNullOrWhiteSpace(idempotencyKey))
                 return BadRequest("Idempotency-Key is required.");
 
-            return await requestQueue.EnqueueAsync<IActionResult>(apiKey, async () =>
+            return await _requestQueue.EnqueueAsync<IActionResult>(apiKey, async () =>
             {
                 var categories = await _repositoryManager.Category.GetCategories(input);
 
@@ -61,15 +63,15 @@ namespace LocationApp.Location.Controllers
         [SwaggerOperation(summary: "Get locations")]
         [SwaggerResponse(200, "Got locations")]
         public async Task<IActionResult> GetLocations(
-            [FromServices] RequestQueueService requestQueue,
-            [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
-            [FromHeader(Name = "Authorization")] string apiKey,
+            [FromHeader(Name = "Idempotency-Key")] string idempotencyKey, 
             [FromQuery] LocationInput input)
         {
+            var apiKey = Request.Headers["Authorization"].FirstOrDefault();
+
             if (string.IsNullOrWhiteSpace(idempotencyKey))
                 return BadRequest("Idempotency-Key is required.");
 
-            return await requestQueue.EnqueueAsync<IActionResult>(apiKey, async () =>
+            return await _requestQueue.EnqueueAsync<IActionResult>(apiKey, async () =>
             {
                 Geometry currenctLocation = new Point(input.Latitude, input.Longitude) { SRID = 4326 };
 
@@ -90,15 +92,15 @@ namespace LocationApp.Location.Controllers
         [SwaggerOperation(summary: "Change location favoriete status", description: "If location is not in user favorites add it else remove it")]
         [SwaggerResponse(200, "Changed location favorite status")]
         public async Task<IActionResult> FavoriteStatus(
-            [FromServices] RequestQueueService requestQueue,
             [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
-            [FromHeader(Name = "Authorization")] string apiKey,
             [FromQuery] int locationId)
         {
+            var apiKey = Request.Headers["Authorization"].FirstOrDefault();
+
             if (string.IsNullOrWhiteSpace(idempotencyKey))
                 return BadRequest("Idempotency-Key is required.");
 
-            return await requestQueue.EnqueueAsync<IActionResult>(apiKey, async () =>
+            return await _requestQueue.EnqueueAsync<IActionResult>(apiKey, async () =>
             {
                 // Get the user from the repository
                 var user = await _repositoryManager.User.GetUserWithLocations(apiKey.GetUserApiKey());

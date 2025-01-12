@@ -16,11 +16,13 @@ namespace LocationApp.Account.Controllers
     [Route("api/[controller]")]
     public class AuthenticationController : ControllerBase
     {
+        private readonly RequestQueueService _requestQueue;
         private readonly IRepositoryManager _repositoryManager;
         private readonly IHubContext<SearchHub> _hubContext;
 
-        public AuthenticationController(IRepositoryManager repositoryManager, IHubContext<SearchHub> hubContext)
+        public AuthenticationController(RequestQueueService requestQueue, IRepositoryManager repositoryManager, IHubContext<SearchHub> hubContext)
         {
+            _requestQueue = requestQueue;
             _repositoryManager = repositoryManager;
             _hubContext = hubContext;
         }
@@ -30,7 +32,6 @@ namespace LocationApp.Account.Controllers
         [SwaggerResponse(200, "User authentication data")]
         [AllowAnonymous]
         public async Task<IActionResult> Login(
-            [FromServices] RequestQueueService requestQueue, 
             [FromHeader(Name = "Idempotency-Key")] string idempotencyKey, 
             [FromBody] LoginInput input)
         {
@@ -42,7 +43,7 @@ namespace LocationApp.Account.Controllers
             var operationKey = "LoginOperation" + input.Username;
 
             // Enqueue the operation
-            return await requestQueue.EnqueueAsync<IActionResult>(operationKey, async () =>
+            return await _requestQueue.EnqueueAsync<IActionResult>(operationKey, async () =>
             {
                 // Get user from the repository
                 var user = await _repositoryManager.User.GetUser(input.Username, input.Password);
@@ -64,7 +65,6 @@ namespace LocationApp.Account.Controllers
         [SwaggerResponse(200, "User authentication data")]
         [AllowAnonymous]
         public async Task<IActionResult> Register(
-            [FromServices] RequestQueueService requestQueue, 
             [FromHeader(Name = "Idempotency-Key")] string idempotencyKey, 
             [FromBody]RegistrationInput input)
         {
@@ -76,7 +76,7 @@ namespace LocationApp.Account.Controllers
             var operationKey = "RegisterOperation" + input.Username;
 
             // Enqueue the operation
-            return await requestQueue.EnqueueAsync<IActionResult>(operationKey, async () =>
+            return await _requestQueue.EnqueueAsync<IActionResult>(operationKey, async () =>
             {
                 // Check if the username is already taken
                 if (await _repositoryManager.User.CheckUserExists(input.Username))
