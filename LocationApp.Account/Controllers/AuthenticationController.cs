@@ -35,10 +35,6 @@ namespace LocationApp.Account.Controllers
             [FromHeader(Name = "Idempotency-Key")] string idempotencyKey, 
             [FromBody] LoginInput input)
         {
-            // Check if the Idempotency-Key is present
-            if (string.IsNullOrWhiteSpace(idempotencyKey))
-                return BadRequest("Idempotency-Key is required.");
-
             // Create key for queue
             var operationKey = "LoginOperation" + input.Username;
 
@@ -68,10 +64,6 @@ namespace LocationApp.Account.Controllers
             [FromHeader(Name = "Idempotency-Key")] string idempotencyKey, 
             [FromBody]RegistrationInput input)
         {
-            // Check if the Idempotency-Key is present
-            if (string.IsNullOrWhiteSpace(idempotencyKey))
-                return BadRequest("Idempotency-Key is required.");
-
             // Create key for queue
             var operationKey = "RegisterOperation" + input.Username;
 

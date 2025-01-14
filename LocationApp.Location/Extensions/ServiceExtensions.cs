@@ -1,5 +1,6 @@
 ﻿using LocationApp.Model.Core;
 using LocationApp.Repository;
+using LocationApp.Services.Extensions;
 using LocationApp.Services.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;

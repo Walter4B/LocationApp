@@ -1,12 +1,14 @@
 ﻿using LocationApp.Repository;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 
-namespace LocationApp.Account.Extensions
+namespace LocationApp.Services.Extensions
 {
     public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
@@ -16,9 +18,8 @@ namespace LocationApp.Account.Extensions
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
-            ISystemClock clock,
             IRepositoryManager repositoryManager)
-            : base(options, logger, encoder, clock)
+            : base(options, logger, encoder)
         {
             _repositoryManager = repositoryManager;
         }

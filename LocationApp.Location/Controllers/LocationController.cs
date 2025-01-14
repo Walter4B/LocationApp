@@ -37,13 +37,9 @@ namespace LocationApp.Location.Controllers
         [SwaggerResponse(200, "Got locations")]
         public async Task<IActionResult> GetCategories(
             [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
+            [FromHeader(Name = "Authorization")] string apiKey,
             [FromQuery] DataTableOptions input)
         {
-            var apiKey = Request.Headers["Authorization"].FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(idempotencyKey))
-                return BadRequest("Idempotency-Key is required.");
-
             return await _requestQueue.EnqueueAsync<IActionResult>(apiKey, async () =>
             {
                 var categories = await _repositoryManager.Category.GetCategories(input);
@@ -63,14 +59,10 @@ namespace LocationApp.Location.Controllers
         [SwaggerOperation(summary: "Get locations")]
         [SwaggerResponse(200, "Got locations")]
         public async Task<IActionResult> GetLocations(
-            [FromHeader(Name = "Idempotency-Key")] string idempotencyKey, 
+            [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
+            [FromHeader(Name = "Authorization")] string apiKey,
             [FromQuery] LocationInput input)
         {
-            var apiKey = Request.Headers["Authorization"].FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(idempotencyKey))
-                return BadRequest("Idempotency-Key is required.");
-
             return await _requestQueue.EnqueueAsync<IActionResult>(apiKey, async () =>
             {
                 Geometry currenctLocation = new Point(input.Latitude, input.Longitude) { SRID = 4326 };
@@ -93,13 +85,9 @@ namespace LocationApp.Location.Controllers
         [SwaggerResponse(200, "Changed location favorite status")]
         public async Task<IActionResult> FavoriteStatus(
             [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
+            [FromHeader(Name = "Authorization")] string apiKey,
             [FromQuery] int locationId)
         {
-            var apiKey = Request.Headers["Authorization"].FirstOrDefault();
-
-            if (string.IsNullOrWhiteSpace(idempotencyKey))
-                return BadRequest("Idempotency-Key is required.");
-
             return await _requestQueue.EnqueueAsync<IActionResult>(apiKey, async () =>
             {
                 // Get the user from the repository
@@ -107,7 +95,7 @@ namespace LocationApp.Location.Controllers
 
                 // Check if the user exists
                 if (user == null)
-                    return Unauthorized("API key is missing or invalid.");
+                    return Unauthorized("Invalid user");
 
                 if (user.Locations.Any(l => l.Id.Equals(locationId)))
                 {

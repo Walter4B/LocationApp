@@ -1,9 +1,11 @@
 ﻿using LocationApp.Model.Core;
 using LocationApp.Repository;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace LocationApp.Location.Middleware
+namespace LocationApp.Account.Middleware
 {
     public class RequestResponseLoggingMiddleware
     {
