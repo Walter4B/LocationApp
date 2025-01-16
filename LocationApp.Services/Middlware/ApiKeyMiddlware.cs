@@ -1,6 +1,5 @@
 ﻿using LocationApp.Repository;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 
 namespace LocationApp.Services.Middlware

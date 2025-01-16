@@ -2,7 +2,6 @@ using LocationApp.Account.Hubs;
 using LocationApp.Account.Middleware;
 using LocationApp.Location.Extensions;
 using LocationApp.Services.Middlware;
-using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
